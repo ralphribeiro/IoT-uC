@@ -43,7 +43,10 @@ void processaBMP(int intervaloBMP)
         temperaturaBMP = bmp.readTemperature();
         altitude = bmp.readAltitude();
         pressao = bmp.readPressure();
-
+        
+        publicaMQTT("sensor=BMP temperatura=" + (String)temperaturaBMP);
+        publicaMQTT("sensor=BMP pressao=" + (String)pressao);
+        
         ultimaLeituraBMP = agora;
     }
 }
