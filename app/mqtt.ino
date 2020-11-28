@@ -94,14 +94,14 @@ void callback(char *topico, byte *mensagem, unsigned int tamanho)
 	}
 }
 
-void publicaMQTT(String sensor, String msg)
+void publicaMQTT(String msg)
 {
 	if (!MQTT.connected())
 		reconectar();
 
 	if (statusMq == 1)
 	{
-		String pub_msg = ((String)topicoPub + ",id=" + sensor + " temperatura=" + msg);
+		String pub_msg = ((String)idHW + "," + msg);
 		MQTT.publish(topicoPub, pub_msg.c_str(), false);
 	}
 }

@@ -50,7 +50,8 @@ void processaDHT(int intervaloDht)
         temperaturaDHT = t;
         pontoOrvalho = hic;
 
-        publicaMQTT("DHT22", (String)t);
+        publicaMQTT("sensor=DHT temperatura=" + (String)t);
+        publicaMQTT("sensor=DHT umidade=" + (String)h);
 
         ultimaLeitura = agora;
     }
