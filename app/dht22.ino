@@ -28,12 +28,12 @@ float obtemPontoDeOrvalhoDHT()
     return pontoOrvalho;
 }
 
-long ultimaLeitura = 0;
+long ultimaLeituraDht = 0;
 void processaDHT(int intervaloDht)
 {
     long agora = millis();
 
-    if ((agora - ultimaLeitura) > intervaloDht)
+    if ((agora - ultimaLeituraDht) > intervaloDht)
     {
         float h = dht.readHumidity();
         float t = dht.readTemperature();
@@ -53,6 +53,6 @@ void processaDHT(int intervaloDht)
         publicaMQTT("sensor=DHT temperatura=" + (String)t);
         publicaMQTT("sensor=DHT umidade=" + (String)h);
 
-        ultimaLeitura = agora;
+        ultimaLeituraDht = agora;
     }
 }

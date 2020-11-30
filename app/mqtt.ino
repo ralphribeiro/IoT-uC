@@ -16,6 +16,7 @@ void iniciaMQTT()
 {
 	MQTT.setServer(mqtt_server, porta);
 	MQTT.setCallback(callback);
+	gerenciaConexao();
 	delay(500);
 }
 
@@ -25,47 +26,46 @@ int8_t statusMqtt()
 	return statusMq;
 }
 
-long ultimaLeituraMq = 0;
-void processaMQTT(int intervalMq)
+void processaMQTT()
 {
-	long agora = millis();
-	if ((agora - ultimaLeituraMq) > intervalMq)
-	{
-		if (!MQTT.connected())
-			reconectar();
-
-		if (statusMq == 1)
-			MQTT.loop();
-
-		ultimaLeituraMq = agora;
-	}
+	gerenciaConexao();
+	if (statusMq == 1)
+		MQTT.loop();
 }
 
-void reconectar()
+long ultimaLeituraMq = 0;
+int intervaloMqConn = 3000;
+void gerenciaConexao()
 {
-	statusMq = 0;
-	// while (!MQTT.connected())
-	// {
-	escreveLog("Conectando ao Broker MQTT: ", 1);
-	escreveLog(mqtt_server, 1);
-	escreveLog("\n", 1);
-
-	if (MQTT.connect(idHW))
-	{
-		escreveLog("Conectado com Sucesso ao Broker\n", 1);
-		statusMq = 1;
-		MQTT.subscribe(topicoSub);
-	}
+	if(MQTT.connected())
+		return;
 	else
 	{
-		escreveLog("Falha ao Conectar, rc=", 2);
-		escreveLog(String(MQTT.state()), 2);
-		escreveLog("\n", 2);
-		escreveLog(" tentando se reconectar em 3 sugundos...\n", 2);
-		statusMq = -1;
-		// delay(3000);
+		long agora = millis();
+		if ((agora - ultimaLeituraMq) > intervaloMqConn || statusMq == 0)
+		{
+			statusMq = 0;
+			escreveLog("Conectando ao Broker MQTT: ", 1);
+			escreveLog(mqtt_server, 1);
+			escreveLog("\n", 1);
+
+			if (MQTT.connect(idHW))
+			{
+				escreveLog("Conectado com Sucesso ao Broker\n", 1);
+				statusMq = 1;
+				MQTT.subscribe(topicoSub);
+			}
+			else
+			{
+				escreveLog("Falha ao Conectar, rc=", 2);
+				escreveLog(String(MQTT.state()), 2);
+				escreveLog("\n", 2);
+				escreveLog(" tentando se reconectar em 3 sugundos...\n", 2);
+				statusMq = -1;
+			}
+			ultimaLeituraMq = agora;
+		}
 	}
-	// }
 }
 
 void callback(char *topico, byte *mensagem, unsigned int tamanho)
@@ -96,12 +96,11 @@ void callback(char *topico, byte *mensagem, unsigned int tamanho)
 
 void publicaMQTT(String msg)
 {
-	if (!MQTT.connected())
-		reconectar();
+	gerenciaConexao();
 
 	if (statusMq == 1)
 	{
 		String pub_msg = ((String)idHW + "," + msg);
-		MQTT.publish(topicoPub, pub_msg.c_str(), false);
+		MQTT.publish(topicoPub, pub_msg.c_str(), false);		
 	}
 }

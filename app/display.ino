@@ -48,6 +48,7 @@ void mostraTela1()
     float d = obtemPressao();
     bool e = statusWifi();
     int8_t f = statusMqtt();
+    uint8_t g = obtemNivelPwm();
 
     display.clearDisplay();
     display.setTextSize(2);
@@ -67,14 +68,18 @@ void mostraTela1()
     display.print(b, 1);
     display.print("%");
     display.setCursor(0, 40);
-    display.print(d/101325, 2);
-    display.print("atm");
+    display.print(d/1000, 2);
+    display.print("kPa");
 
     display.setCursor(110, 0);
     display.setTextSize(1);
     display.print(e);
     display.setCursor(110, 10);
     display.print(f);
+
+    display.setCursor(100, 32);
+    display.print(g);
+    display.print("%");
 }
 
 void mostraLog(String s)
