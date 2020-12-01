@@ -1,5 +1,4 @@
 #include <Led.h>
-
 #define PWMPIN D5
 
 uint8_t nivelMin = 10;
@@ -34,7 +33,7 @@ int obtemNivelPwm()
 
 void processaSaida()
 {
-    if (!led.processa())
-        manipulaFade();
+    // if (!led.processa())
+    //     manipulaFade();
     nivelPwm = map(led.obtemNivel(), nivelMin, nivelMax, 0, 100);
 }
