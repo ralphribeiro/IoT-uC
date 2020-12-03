@@ -35,6 +35,5 @@ void processaSaida()
 {
     if (!led.processa())
         manipulaFade();
-    // nivelPwm = map(led.obtemNivel(), nivelMin, nivelMax, 0, 100);
-    nivelPwm = led.obtemNivel();
+    nivelPwm = map(led.obtemNivel(), nivelMin, nivelMax, 0, 100);
 }
