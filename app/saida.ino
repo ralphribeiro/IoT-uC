@@ -1,8 +1,8 @@
 #include <Led.h>
 #define PWMPIN D5
 
-uint8_t nivelMin = 100;
-uint8_t nivelMax = 1023;
+uint16_t nivelMin = 100;
+uint16_t nivelMax = 1023;
 
 uint8_t intervaloEventoFade = 30;
 uint8_t degrauFade = 5;

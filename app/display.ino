@@ -48,7 +48,7 @@ void mostraTela1()
     float d = obtemPressao();
     bool e = statusWifi();
     int8_t f = statusMqtt();
-    uint8_t g = obtemNivelPwm();
+    uint16_t g = obtemNivelPwm();
 
     display.clearDisplay();
     display.setTextSize(2);
