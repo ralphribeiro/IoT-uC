@@ -49,5 +49,5 @@ void processaES()
 
     processaWIFI(tempoWifi);
     processaMQTT();
-    // processaSaida();
+    processaSaida();
 }
