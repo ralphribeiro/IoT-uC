@@ -16,6 +16,7 @@ void escreveLog(String msg, unsigned short int nivLog)
 
 void setup()
 {
+    analogWriteFreq(10000);
     iniciaES();
 }
 
@@ -49,5 +50,5 @@ void processaES()
 
     processaWIFI(tempoWifi);
     processaMQTT();
-    // processaSaida();
+    processaSaida();
 }
