@@ -2,7 +2,8 @@
 #include <WiFiClient.h>
 #include <Wire.h>
 
-const char *mqtt_server = "192.168.1.5";
+// const char *mqtt_server = "192.168.1.5";
+const char *mqtt_server = "192.168.1.7";
 const char *topicoPub = "sensors";
 const char *topicoSub = "sensors";
 const char *idHW = "ESP_01";

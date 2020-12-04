@@ -36,7 +36,7 @@ void iniciaES()
 
 uint16_t tempoDisplay = 100;
 uint16_t tempoDht = 1000;
-uint16_t tempoBmp = 5000;
+uint16_t tempoBmp = 1000;
 uint16_t tempoWifi = 5000;
 
 void processaES()
