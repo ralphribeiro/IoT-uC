@@ -16,7 +16,7 @@ void escreveLog(String msg, unsigned short int nivLog)
 
 void setup()
 {
-    analogWriteFreq(10000);
+    // analogWriteFreq(10000);
     iniciaES();
 }
 
@@ -32,7 +32,6 @@ void iniciaES()
     iniciaBMP();
     iniciaWIFI();
     iniciaMQTT();
-    iniciaSaida();
 }
 
 uint16_t tempoDisplay = 100;

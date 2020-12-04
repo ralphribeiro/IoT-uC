@@ -2,8 +2,8 @@
 #include <WiFiClient.h>
 #include <Wire.h>
 
-// const char *mqtt_server = "192.168.1.5";
-const char *mqtt_server = "192.168.1.7";
+const char *mqtt_server = "192.168.1.5";
+// const char *mqtt_server = "192.168.1.7";
 const char *topicoPub = "sensors";
 const char *topicoSub = "sensors";
 const char *idHW = "ESP_01";
@@ -71,28 +71,28 @@ void gerenciaConexao()
 
 void callback(char *topico, byte *mensagem, unsigned int tamanho)
 {
-	String msg;
+	// String msg;
 
-	for (int i = 0; i < tamanho; i++)
-	{
-		msg += (char)mensagem[i];
-	}
+	// for (int i = 0; i < tamanho; i++)
+	// {
+	// 	msg += (char)mensagem[i];
+	// }
 
-	if (String(topico) == topicoSub)
-	{
-		escreveLog("topico: ", 1);
-		escreveLog(topico, 1);
-		escreveLog("mensagem: ", 1);
-		escreveLog(msg, 1);
-		escreveLog("\n", 1);
+	// if (String(topico) == topicoSub)
+	// {
+	// 	escreveLog("topico: ", 1);
+	// 	escreveLog(topico, 1);
+	// 	escreveLog("mensagem: ", 1);
+	// 	escreveLog(msg, 1);
+	// 	escreveLog("\n", 1);
 
-		if (msg.equals("on"))
-		{
-		}
-		else if (msg.equals("off"))
-		{
-		}
-	}
+	// 	if (msg.equals("on"))
+	// 	{
+	// 	}
+	// 	else if (msg.equals("off"))
+	// 	{
+	// 	}
+	// }
 }
 
 void publicaMQTT(String msg)

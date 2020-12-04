@@ -9,11 +9,6 @@ uint8_t degrauFade = 20;
 
 Led led = Led(PWMPIN, 1, nivelMin, nivelMax);
 
-void iniciaSaida()
-{
-    pinMode(PWMPIN, OUTPUT);
-}
-
 void manipulaFade()
 {
     if (!led.fade())
@@ -35,5 +30,5 @@ void processaSaida()
 {
     if (!led.processa())
         manipulaFade();
-    nivelPwm = map(led.obtemNivel(), nivelMin, nivelMax, 0, 100);
+    nivelPwm = map(led.obtemNivel(), 0, nivelMax, 0, 100);
 }
