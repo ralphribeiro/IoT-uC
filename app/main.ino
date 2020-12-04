@@ -16,7 +16,8 @@ void escreveLog(String msg, unsigned short int nivLog)
 
 void setup()
 {
-    // analogWriteFreq(10000);
+    Serial.begin(9600);
+    analogWriteFreq(10000);
     iniciaES();
 }
 

@@ -5,7 +5,7 @@
 const char *mqtt_server = "192.168.1.5";
 // const char *mqtt_server = "192.168.1.7";
 const char *topicoPub = "sensors";
-const char *topicoSub = "sensors";
+const char *topicoSub = "output";
 const char *idHW = "ESP_01";
 
 const uint16_t porta = 1883;
@@ -21,31 +21,30 @@ void iniciaMQTT()
 	delay(500);
 }
 
-int8_t statusMq = 0;
-int8_t statusMqtt()
+bool statusMqtt()
 {
-	return statusMq;
+	return MQTT.connected();
 }
 
 void processaMQTT()
 {
 	gerenciaConexao();
-	if (statusMq == 1)
-		MQTT.loop();
+	MQTT.loop();
 }
 
 long ultimaLeituraMq = 0;
 int intervaloMqConn = 3000;
 void gerenciaConexao()
 {
-	if(MQTT.connected())
+	if(statusMqtt())
+	{	
 		return;
+	}
 	else
 	{
 		long agora = millis();
-		if ((agora - ultimaLeituraMq) > intervaloMqConn || statusMq == 0)
+		if ((agora - ultimaLeituraMq) > intervaloMqConn)
 		{
-			statusMq = 0;
 			escreveLog("Conectando ao Broker MQTT: ", 1);
 			escreveLog(mqtt_server, 1);
 			escreveLog("\n", 1);
@@ -53,7 +52,6 @@ void gerenciaConexao()
 			if (MQTT.connect(idHW))
 			{
 				escreveLog("Conectado com Sucesso ao Broker\n", 1);
-				statusMq = 1;
 				MQTT.subscribe(topicoSub);
 			}
 			else
@@ -62,7 +60,6 @@ void gerenciaConexao()
 				escreveLog(String(MQTT.state()), 2);
 				escreveLog("\n", 2);
 				escreveLog(" tentando se reconectar em 3 sugundos...\n", 2);
-				statusMq = -1;
 			}
 			ultimaLeituraMq = agora;
 		}
@@ -99,9 +96,6 @@ void publicaMQTT(String msg)
 {
 	gerenciaConexao();
 
-	if (statusMq == 1)
-	{
-		String pub_msg = ((String)idHW + "," + msg);
-		MQTT.publish(topicoPub, pub_msg.c_str(), false);		
-	}
+	String pub_msg = ((String)idHW + "," + msg);
+	MQTT.publish(topicoPub, pub_msg.c_str(), false);
 }

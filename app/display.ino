@@ -47,7 +47,7 @@ void mostraTela1()
     float c = obtemTemperaturaBMP();
     float d = obtemPressao();
     bool e = statusWifi();
-    int8_t f = statusMqtt();
+    bool f = statusMqtt();
     uint16_t g = obtemNivelPwm();
 
     display.clearDisplay();
