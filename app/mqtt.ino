@@ -1,78 +1,26 @@
-#include <PubSubClient.h>
 #include <WiFiClient.h>
-#include <Wire.h>
+#include <PubSubClient.h>
 
-const char *mqtt_server = "192.168.1.5";
-// const char *mqtt_server = "192.168.1.7";
+// Update these with values suitable for your hardware/network.
+IPAddress server(192, 168, 1, 7);
+
 const char *topicoPub = "sensors";
 const char *topicoSub = "output";
 const char *idHW = "ESP_01";
 
-const uint16_t porta = 1883;
+const uint16_t port = 1883;
 
-WiFiClient espClient;
-PubSubClient MQTT(espClient);
+const uint16_t reconnectDelay = 5000;
 
-void iniciaMQTT()
-{
-	MQTT.setServer(mqtt_server, porta);
-	MQTT.setCallback(callback);
-	gerenciaConexao();
-	delay(500);
-}
 
-bool statusMqtt()
-{
-	return MQTT.connected();
-}
 
-void processaMQTT()
-{
-	gerenciaConexao();
-	MQTT.loop();
-}
-
-long ultimaLeituraMq = 0;
-int intervaloMqConn = 3000;
-void gerenciaConexao()
-{
-	if(statusMqtt())
-	{	
-		return;
-	}
-	else
-	{
-		long agora = millis();
-		if ((agora - ultimaLeituraMq) > intervaloMqConn)
-		{
-			escreveLog("Conectando ao Broker MQTT: ", 1);
-			escreveLog(mqtt_server, 1);
-			escreveLog("\n", 1);
-
-			if (MQTT.connect(idHW))
-			{
-				escreveLog("Conectado com Sucesso ao Broker\n", 1);
-				MQTT.subscribe(topicoSub);
-			}
-			else
-			{
-				escreveLog("Falha ao Conectar, rc=", 2);
-				escreveLog(String(MQTT.state()), 2);
-				escreveLog("\n", 2);
-				escreveLog(" tentando se reconectar em 3 sugundos...\n", 2);
-			}
-			ultimaLeituraMq = agora;
-		}
-	}
-}
-
-void callback(char *topico, byte *mensagem, unsigned int tamanho)
+void callback(char *topic, byte *payload, unsigned int length)
 {
 	// String msg;
 
-	// for (int i = 0; i < tamanho; i++)
+	// for (int i = 0; i < length; i++)
 	// {
-	// 	msg += (char)mensagem[i];
+	// 	msg += (char)payload[i];
 	// }
 
 	// if (String(topico) == topicoSub)
@@ -92,10 +40,60 @@ void callback(char *topico, byte *mensagem, unsigned int tamanho)
 	// }
 }
 
-void publicaMQTT(String msg)
-{
-	gerenciaConexao();
+WiFiClient wifiClient;
+PubSubClient client(wifiClient);
 
-	String pub_msg = ((String)idHW + "," + msg);
-	MQTT.publish(topicoPub, pub_msg.c_str(), false);
+long lastReconnectAttempt = 0;
+
+boolean reconnect()
+{
+	if (client.connect(idHW))
+	{
+		client.publish(topicoPub, "conectando");
+		client.subscribe(topicoSub);
+	}
+	return client.connected();
+}
+
+void initMQTT()
+{
+	client.setServer(server, port);
+	client.setCallback(callback);
+
+	delay(500);
+	lastReconnectAttempt = 0;
+}
+
+bool statusMqtt()
+{
+	return client.connected();
+}
+
+bool processMQTT()
+{
+	if (!client.connected())
+	{
+		long now = millis();
+		if (now - lastReconnectAttempt > reconnectDelay)
+		{
+			lastReconnectAttempt = now;
+			if (reconnect())
+				lastReconnectAttempt = 0;
+		}
+	}
+	else
+	{
+		client.loop();
+		return true;
+	}
+	return false;
+}
+
+void pubMQTT(String msg)
+{
+	if(processMQTT())
+	{
+		String pub_msg = ((String)idHW + "," + msg);
+		client.publish(topicoPub, pub_msg.c_str(), false);
+	}	
 }

@@ -1,4 +1,3 @@
-
 #include <Wire.h>
 #include <SPI.h>
 #include <Adafruit_BMP085.h>
@@ -44,8 +43,8 @@ void processaBMP(int intervaloBMP)
         altitude = bmp.readAltitude();
         pressao = bmp.readPressure();
         
-        publicaMQTT("sensor=BMP temperatura=" + (String)temperaturaBMP);
-        publicaMQTT("sensor=BMP pressao=" + (String)pressao);
+        pubMQTT("sensor=BMP temperatura=" + (String)temperaturaBMP);
+        pubMQTT("sensor=BMP pressao=" + (String)pressao);
         
         ultimaLeituraBMP = agora;
     }

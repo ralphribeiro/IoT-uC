@@ -32,7 +32,7 @@ void iniciaES()
     iniciaDHT();
     iniciaBMP();
     iniciaWIFI();
-    iniciaMQTT();
+    initMQTT();
 }
 
 uint16_t tempoDisplay = 100;
@@ -49,6 +49,6 @@ void processaES()
         processaDisplay(tempoDisplay);
 
     processaWIFI(tempoWifi);
-    processaMQTT();
+    processMQTT();
     processaSaida();
 }
