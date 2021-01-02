@@ -16,7 +16,6 @@ void escreveLog(String msg, unsigned short int nivLog)
 
 void setup()
 {
-    Serial.begin(9600);
     analogWriteFreq(10000);
     iniciaES();
 }
@@ -31,8 +30,9 @@ void iniciaES()
     iniciaDisplay();
     iniciaDHT();
     iniciaBMP();
-    iniciaWIFI();
-    initMQTT();
+    // iniciaWIFI();
+    // initMQTT();
+    iniciaBT();
 }
 
 uint16_t tempoDisplay = 100;
@@ -48,7 +48,8 @@ void processaES()
     if (nivelLog == 0)
         processaDisplay(tempoDisplay);
 
-    processaWIFI(tempoWifi);
-    processMQTT();
+    // processaWIFI(tempoWifi);
+    // processMQTT();
+    processaBT();
     processaSaida();
 }
