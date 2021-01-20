@@ -30,8 +30,9 @@ void iniciaES()
     iniciaDisplay();
     iniciaDHT();
     iniciaBMP();
-    // iniciaWIFI();
+    iniciaWIFI();
     // initMQTT();
+    iniciaBroker();
     iniciaBT();
 }
 
@@ -48,8 +49,9 @@ void processaES()
     if (nivelLog == 0)
         processaDisplay(tempoDisplay);
 
-    // processaWIFI(tempoWifi);
+    processaWIFI(tempoWifi);
     // processMQTT();
     processaBT();
     processaSaida();
+    processaBroker();
 }

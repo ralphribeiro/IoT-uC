@@ -9,6 +9,11 @@ bool statusWifi()
 	return statusWf;
 }
 
+// String ipLocal()
+// {
+// 	return String(WiFi.localIP());
+// }
+
 void iniciaWIFI()
 {
 	WiFi.begin(ssid, password);
@@ -23,6 +28,8 @@ void iniciaWIFI()
 	}
 	statusWf = 1;
 	escreveLog("WiFi conectado!\n", 0);
+	
+	WiFi.setAutoReconnect(true);
 }
 
 long ultimaLeituraWf = 0;

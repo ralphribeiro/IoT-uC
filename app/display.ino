@@ -42,43 +42,46 @@ void processaDisplay(int intervaloDisplay)
 
 void mostraTela1()
 {
-    float a = obtemTemperaturaDHT();
-    float b = obtemUmidadeDHT();
-    float c = obtemTemperaturaBMP();
-    float d = obtemPressao();
-    bool e = statusWifi();
-    bool f = statusMqtt();
-    uint16_t g = obtemNivelPwm();
+    float dhtTemp = obtemTemperaturaDHT();
+    float dhtUmi = obtemUmidadeDHT();
+    float bmpTemp = obtemTemperaturaBMP();
+    float bmpPressao = obtemPressao();
+    bool stsWifi = statusWifi();
+    bool stsMqtt = statusMqtt();
+    uint16_t nivelPwm = obtemNivelPwm();
+    bool stsBroker = statusBroker();
 
     display.clearDisplay();
     display.setTextSize(2);
     display.setCursor(0, 0);
-    display.print(a, 1);
+    display.print(dhtTemp, 1);
     display.drawCircle(display.getCursorX() + 4, display.getCursorY() + 3, 3, WHITE);
     display.setCursor(display.getCursorX() + 9, 0);
     display.setTextSize(2);
     display.println("C");
     display.setTextSize(1);
     display.setCursor(0, 20);
-    display.print(c, 1);
+    display.print(bmpTemp, 1);
     display.drawCircle(display.getCursorX() + 1, display.getCursorY() + 2, 1, WHITE);
     display.setCursor(display.getCursorX() + 4, display.getCursorY());
     display.print("C");
     display.setCursor(0, 30);
-    display.print(b, 1);
+    display.print(dhtUmi, 1);
     display.print("%");
     display.setCursor(0, 40);
-    display.print(d/1000, 2);
+    display.print(bmpPressao/1000, 2);
     display.print("kPa");
 
     display.setCursor(110, 0);
     display.setTextSize(1);
-    display.print(e);
+    display.print(stsWifi);
     display.setCursor(110, 10);
-    display.print(f);
+    display.print(stsMqtt);
+    display.setCursor(110, 20);
+    display.print(stsBroker);
 
     display.setCursor(100, 32);
-    display.print(g);
+    display.print(nivelPwm);
     display.print("%");
 }
 
