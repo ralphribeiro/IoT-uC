@@ -47,7 +47,6 @@ void mostraTela1()
     float bmpTemp = obtemTemperaturaBMP();
     float bmpPressao = obtemPressao();
     bool stsWifi = statusWifi();
-    bool stsMqtt = statusMqtt();
     uint16_t nivelPwm = obtemNivelPwm();
     bool stsBroker = statusBroker();
 
@@ -76,8 +75,6 @@ void mostraTela1()
     display.setTextSize(1);
     display.print(stsWifi);
     display.setCursor(110, 10);
-    display.print(stsMqtt);
-    display.setCursor(110, 20);
     display.print(stsBroker);
 
     display.setCursor(100, 32);
