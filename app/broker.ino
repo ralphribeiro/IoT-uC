@@ -1,14 +1,12 @@
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
 
-int port = 5556;
-char *host = "192.168.1.3";
+int port = 1883;
+IPAddress host(192, 168, 1, 3);
 
 const char *topicoPub = "sensors";
-const char *topicoSub = "output";
+const char *topicoSub = "comandos";
 const char *idHW = "ESP_01";
-
-// const uint16_t port = 1883;
 
 bool _statusBroker = 0;
 bool statusBroker()
@@ -20,12 +18,11 @@ WiFiClient clientWifi;
 PubSubClient clientBroker(clientWifi);
 
 
-
 boolean reconecta()
 {
     if (clientBroker.connect(idHW))
     {
-        escreveLog("Conectando ao Broker: " + String(host), 1);
+        escreveLog("Conectando ao Broker", 1);
         clientBroker.publish(topicoPub, "conectado");
         clientBroker.subscribe(topicoSub);
         escreveLog("Conectado", 1);
@@ -34,16 +31,36 @@ boolean reconecta()
     return clientBroker.connected();
 }
 
+String _topico = "";
+String obtemTopico()
+{
+    return _topico;
+} 
+
 void callback(char *topic, byte *payload, unsigned int length)
 {
-    // handle message arrived
-}
+    String msg = "";
+    // if (topic == topicoSub)
+    // {
+        for (int i = 0; i < length; i++)
+        {
+            msg.concat((char)payload[i]);
+        }
+
+        if (msg == "liga")
+            _topico = "Ligado";
+        if (msg == "desliga")
+            _topico = "Desligado";
+
+        _topico = msg;
+    // }
+}   
 
 long ultimaTentativeReconexao = 0;
 
 void iniciaBroker()
 {
-    escreveLog("Iniciando cliente Broker: " + (String)host, 1);
+    escreveLog("Iniciando cliente Broker", 1);
     clientBroker.setServer(host, port);
     clientBroker.setCallback(callback);
     ultimaTentativeReconexao = 0;

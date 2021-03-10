@@ -42,15 +42,10 @@ void processaDisplay(int intervaloDisplay)
 
 void mostraTela1()
 {
-    float dhtTemp = obtemTemperaturaDHT();
-    float dhtUmi = obtemUmidadeDHT();
-    float bmpTemp = obtemTemperaturaBMP();
-    float bmpPressao = obtemPressao();
-    bool stsWifi = statusWifi();
-    uint16_t nivelPwm = obtemNivelPwm();
-    bool stsBroker = statusBroker();
-
+    
     display.clearDisplay();
+    
+    float dhtTemp = obtemTemperaturaDHT();
     display.setTextSize(2);
     display.setCursor(0, 0);
     display.print(dhtTemp, 1);
@@ -58,25 +53,40 @@ void mostraTela1()
     display.setCursor(display.getCursorX() + 9, 0);
     display.setTextSize(2);
     display.println("C");
+    
+    float bmpTemp = obtemTemperaturaBMP();
     display.setTextSize(1);
     display.setCursor(0, 20);
     display.print(bmpTemp, 1);
     display.drawCircle(display.getCursorX() + 1, display.getCursorY() + 2, 1, WHITE);
     display.setCursor(display.getCursorX() + 4, display.getCursorY());
     display.print("C");
+    
+    float dhtUmi = obtemUmidadeDHT();
     display.setCursor(0, 30);
     display.print(dhtUmi, 1);
     display.print("%");
+
+    float bmpPressao = obtemPressao();
     display.setCursor(0, 40);
     display.print(bmpPressao/1000, 2);
     display.print("kPa");
 
+    bool stsWifi = statusWifi();
     display.setCursor(110, 0);
     display.setTextSize(1);
     display.print(stsWifi);
+    
+    bool stsBroker = statusBroker();
     display.setCursor(110, 10);
     display.print(stsBroker);
 
+    String topico = obtemTopico();
+    display.setCursor(50, 20);
+    display.print(topico);
+
+
+    uint16_t nivelPwm = obtemNivelPwm();
     display.setCursor(100, 32);
     display.print(nivelPwm);
     display.print("%");

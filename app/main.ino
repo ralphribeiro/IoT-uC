@@ -31,7 +31,6 @@ void iniciaES()
     iniciaDHT();
     iniciaBMP();
     iniciaWIFI();
-    // initMQTT();
     iniciaBroker();
     iniciaBT();
 }
@@ -50,7 +49,6 @@ void processaES()
         processaDisplay(tempoDisplay);
 
     processaWIFI(tempoWifi);
-    // processMQTT();
     processaBT();
     processaSaida();
     processaBroker();

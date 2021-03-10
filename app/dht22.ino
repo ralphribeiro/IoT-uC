@@ -50,8 +50,8 @@ void processaDHT(int intervaloDht)
         temperaturaDHT = t;
         pontoOrvalho = hic;
 
-        pubBroker("sensor=DHT temperatura=" + (String)t);
-        pubBroker("sensor=DHT umidade=" + (String)h);
+        pubBroker("sensor=DHT temperatura=" + (String)temperaturaDHT);
+        pubBroker("sensor=DHT umidade=" + (String)umidade);
 
         ultimaLeituraDht = agora;
     }
