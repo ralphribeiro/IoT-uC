@@ -56,19 +56,19 @@ void mostraTela1()
     
     float bmpTemp = obtemTemperaturaBMP();
     display.setTextSize(1);
-    display.setCursor(0, 20);
+    display.setCursor(72, 0);
     display.print(bmpTemp, 1);
     display.drawCircle(display.getCursorX() + 1, display.getCursorY() + 2, 1, WHITE);
     display.setCursor(display.getCursorX() + 4, display.getCursorY());
     display.print("C");
     
     float dhtUmi = obtemUmidadeDHT();
-    display.setCursor(0, 30);
+    display.setCursor(72, 10);
     display.print(dhtUmi, 1);
     display.print("%");
 
     float bmpPressao = obtemPressao();
-    display.setCursor(0, 40);
+    display.setCursor(0, 20);
     display.print(bmpPressao/1000, 2);
     display.print("kPa");
 
@@ -86,17 +86,22 @@ void mostraTela1()
     display.print(topico);
 
 
-    float* acel = obtemAcel();
+    float* angles = getAnglesRoots();
     display.setCursor(60, 20);
-    display.print("x:");
-    display.print(acel[0], 4);
+    display.print("Y:");
+    display.print(angles[0], 1);
     display.setCursor(60, 30);
-    display.print("y:");
-    display.print(acel[1], 4);
+    display.print("P:");
+    display.print(angles[1], 1);
     display.setCursor(60, 40);
-    display.print("z:");
-    display.print(acel[2], 4);
+    display.print("R:");
+    display.print(angles[2], 1);
 }
+
+// void consoleAcel(const Tuple&, std::ostream&)
+// {
+
+// }
 
 void mostraLog(String s)
 {
