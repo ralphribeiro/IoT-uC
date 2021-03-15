@@ -86,10 +86,16 @@ void mostraTela1()
     display.print(topico);
 
 
-    uint16_t nivelPwm = obtemNivelPwm();
-    display.setCursor(100, 32);
-    display.print(nivelPwm);
-    display.print("%");
+    float* acel = obtemAcel();
+    display.setCursor(60, 20);
+    display.print("x:");
+    display.print(acel[0], 4);
+    display.setCursor(60, 30);
+    display.print("y:");
+    display.print(acel[1], 4);
+    display.setCursor(60, 40);
+    display.print("z:");
+    display.print(acel[2], 4);
 }
 
 void mostraLog(String s)

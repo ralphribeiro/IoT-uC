@@ -1,13 +1,14 @@
-#include "DHT.h"
+// #include "DHT.h"
+#include "DHTesp.h"
 
 #define DHTPIN D6
-#define DHTTYPE DHT22
 
-DHT dht(DHTPIN, DHTTYPE);
+DHTesp dht;
 
 void iniciaDHT()
 {
-    dht.begin();
+    // dht.begin();
+    dht.setup(DHTPIN, DHTesp::DHT22);
 }
 
 float temperaturaDHT = 0;
@@ -29,14 +30,18 @@ float obtemPontoDeOrvalhoDHT()
 }
 
 long ultimaLeituraDht = 0;
-void processaDHT(int intervaloDht)
+void processaDHT()
 {
     long agora = millis();
 
-    if ((agora - ultimaLeituraDht) > intervaloDht)
+    long dhtDelay = dht.getMinimumSamplingPeriod();
+
+    if ((agora - ultimaLeituraDht) > dhtDelay)
     {
-        float h = dht.readHumidity();
-        float t = dht.readTemperature();
+        // float h = dht.readHumidity();
+        float h = dht.getHumidity();
+        // float t = dht.readTemperature();
+        float t = dht.getTemperature();
 
         if (isnan(h) || isnan(t))
         {

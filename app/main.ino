@@ -32,24 +32,26 @@ void iniciaES()
     iniciaBMP();
     iniciaWIFI();
     iniciaBroker();
-    iniciaBT();
+    iniciaAcel();
+    // iniciaBT();
 }
 
-uint16_t tempoDisplay = 100;
-uint16_t tempoDht = 1000;
+uint16_t tempoDisplay = 50;
 uint16_t tempoBmp = 1000;
 uint16_t tempoWifi = 5000;
+uint16_t tempoAcel = 2;
 
 void processaES()
 {
-    processaDHT(tempoDht);
+    processaAcel(tempoAcel);
+    processaDHT();
     processaBMP(tempoBmp);
 
     if (nivelLog == 0)
         processaDisplay(tempoDisplay);
 
     processaWIFI(tempoWifi);
-    processaBT();
-    processaSaida();
+    // processaBT();
+    // processaSaida();
     processaBroker();
 }
