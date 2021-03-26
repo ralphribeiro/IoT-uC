@@ -1,195 +1,14 @@
-/***************************************************************************************************************
-* Razor AHRS Firmware v1.4.2
-* 9 Degree of Measurement Attitude and Heading Reference System
-* for Sparkfun "9DOF Razor IMU" (SEN-10125 and SEN-10736)
-* and "9DOF Sensor Stick" (SEN-10183, 10321 and SEN-10724)
-*
-* Released under GNU GPL (General Public License) v3.0
-* Copyright (C) 2013 Peter Bartz [http://ptrbrtz.net]
-* Copyright (C) 2011-2012 Quality & Usability Lab, Deutsche Telekom Laboratories, TU Berlin
-*
-* Infos, updates, bug reports, contributions and feedback:
-*     https://github.com/ptrbrtz/razor-9dof-ahrs
-*
-*
-* History:
-*   * Original code (http://code.google.com/p/sf9domahrs/) by Doug Weibel and Jose Julio,
-*     based on ArduIMU v1.5 by Jordi Munoz and William Premerlani, Jose Julio and Doug Weibel. Thank you!
-*
-*   * Updated code (http://groups.google.com/group/sf_9dof_ahrs_update) by David Malik (david.zsolt.malik@gmail.com)
-*     for new Sparkfun 9DOF Razor hardware (SEN-10125).
-*
-*   * Updated and extended by Peter Bartz (peter-bartz@gmx.de):
-*     * v1.3.0
-*       * Cleaned up, streamlined and restructured most of the code to make it more comprehensible.
-*       * Added sensor calibration (improves precision and responsiveness a lot!).
-*       * Added binary yaw/pitch/roll output.
-*       * Added basic serial command interface to set output modes/calibrate sensors/synch stream/etc.
-*       * Added support to synch automatically when using Rovering Networks Bluetooth modules (and compatible).
-*       * Wrote new easier to use test program (using Processing).
-*       * Added support for new version of "9DOF Razor IMU": SEN-10736.
-*       --> The output of this code is not compatible with the older versions!
-*       --> A Processing sketch to test the tracker is available.
-*     * v1.3.1
-*       * Initializing rotation matrix based on start-up sensor readings -> orientation OK right away.
-*       * Adjusted gyro low-pass filter and output rate settings.
-*     * v1.3.2
-*       * Adapted code to work with new Arduino 1.0 (and older versions still).
-*     * v1.3.3
-*       * Improved synching.
-*     * v1.4.0
-*       * Added support for SparkFun "9DOF Sensor Stick" (versions SEN-10183, SEN-10321 and SEN-10724).
-*     * v1.4.1
-*       * Added output modes to read raw and/or calibrated sensor data in text or binary format.
-*       * Added static magnetometer soft iron distortion compensation
-*     * v1.4.2
-*       * (No core firmware changes)
-*
-* TODOs:
-*   * Allow optional use of EEPROM for storing and reading calibration values.
-*   * Use self-test and temperature-compensation features of the sensors.
-***************************************************************************************************************/
-
-/*
-  "9DOF Razor IMU" hardware versions: SEN-10125 and SEN-10736
-
-  ATMega328@3.3V, 8MHz
-
-  ADXL345  : Accelerometer
-  HMC5843  : Magnetometer on SEN-10125
-  HMC5883L : Magnetometer on SEN-10736
-  ITG-3200 : Gyro
-
-  Arduino IDE : Select board "Arduino Pro or Pro Mini (3.3v, 8Mhz) w/ATmega328"
-*/
-
-/*
-  "9DOF Sensor Stick" hardware versions: SEN-10183, SEN-10321 and SEN-10724
-
-  ADXL345  : Accelerometer
-  HMC5843  : Magnetometer on SEN-10183 and SEN-10321
-  HMC5883L : Magnetometer on SEN-10724
-  ITG-3200 : Gyro
-*/
-
-/*
-  Axis definition (differs from definition printed on the board!):
-    X axis pointing forward (towards the short edge with the connector holes)
-    Y axis pointing to the right
-    and Z axis pointing down.
-    
-  Positive yaw   : clockwise
-  Positive roll  : right wing down
-  Positive pitch : nose up
-  
-  Transformation order: first yaw then pitch then roll.
-*/
-
-/*
-  Serial commands that the firmware understands:
-  
-  "#o<params>" - Set OUTPUT mode and parameters. The available options are:
-  
-      // Streaming output
-      "#o0" - DISABLE continuous streaming output. Also see #f below.
-      "#o1" - ENABLE continuous streaming output.
-      
-      // Angles output
-      "#ob" - Output angles in BINARY format (yaw/pitch/roll as binary float, so one output frame
-              is 3x4 = 12 bytes long).
-      "#ot" - Output angles in TEXT format (Output frames have form like "#YPR=-142.28,-5.38,33.52",
-              followed by carriage return and line feed [\r\n]).
-      
-      // Sensor calibration
-      "#oc" - Go to CALIBRATION output mode.
-      "#on" - When in calibration mode, go on to calibrate NEXT sensor.
-      
-      // Sensor data output
-      "#osct" - Output CALIBRATED SENSOR data of all 9 axes in TEXT format.
-                One frame consist of three lines - one for each sensor: acc, mag, gyr.
-      "#osrt" - Output RAW SENSOR data of all 9 axes in TEXT format.
-                One frame consist of three lines - one for each sensor: acc, mag, gyr.
-      "#osbt" - Output BOTH raw and calibrated SENSOR data of all 9 axes in TEXT format.
-                One frame consist of six lines - like #osrt and #osct combined (first RAW, then CALIBRATED).
-                NOTE: This is a lot of number-to-text conversion work for the little 8MHz chip on the Razor boards.
-                In fact it's too much and an output frame rate of 50Hz can not be maintained. #osbb.
-      "#oscb" - Output CALIBRATED SENSOR data of all 9 axes in BINARY format.
-                One frame consist of three 3x3 float values = 36 bytes. Order is: acc x/y/z, mag x/y/z, gyr x/y/z.
-      "#osrb" - Output RAW SENSOR data of all 9 axes in BINARY format.
-                One frame consist of three 3x3 float values = 36 bytes. Order is: acc x/y/z, mag x/y/z, gyr x/y/z.
-      "#osbb" - Output BOTH raw and calibrated SENSOR data of all 9 axes in BINARY format.
-                One frame consist of 2x36 = 72 bytes - like #osrb and #oscb combined (first RAW, then CALIBRATED).
-      
-      // Error message output        
-      "#oe0" - Disable ERROR message output.
-      "#oe1" - Enable ERROR message output.
-    
-    
-  "#f" - Request one output frame - useful when continuous output is disabled and updates are
-         required in larger intervals only. Though #f only requests one reply, replies are still
-         bound to the internal 20ms (50Hz) time raster. So worst case delay that #f can add is 19.99ms.
-         
-         
-  "#s<xy>" - Request synch token - useful to find out where the frame boundaries are in a continuous
-         binary stream or to see if tracker is present and answering. The tracker will send
-         "#SYNCH<xy>\r\n" in response (so it's possible to read using a readLine() function).
-         x and y are two mandatory but arbitrary bytes that can be used to find out which request
-         the answer belongs to.
-
-
-  Newline characters are not required. So you could send "#ob#o1#s", which
-  would set binary output mode, enable continuous streaming output and request
-  a synch token all at once.
-  
-  The status LED will be on if streaming output is enabled and off otherwise.
-  
-  Byte order of binary output is little-endian: least significant byte comes first.
-*/
-
 /*****************************************************************/
 /*********** USER SETUP AREA! Set your options here! *************/
 /*****************************************************************/
 
-// HARDWARE OPTIONS
-/*****************************************************************/
-// Select your hardware here by uncommenting one line!
-//#define HW__VERSION_CODE 10125 // SparkFun "9DOF Razor IMU" version "SEN-10125" (HMC5843 magnetometer)
-#define HW__VERSION_CODE 10736 // SparkFun "9DOF Razor IMU" version "SEN-10736" (HMC5883L magnetometer)
-//#define HW__VERSION_CODE 10183 // SparkFun "9DOF Sensor Stick" version "SEN-10183" (HMC5843 magnetometer)
-//#define HW__VERSION_CODE 10321 // SparkFun "9DOF Sensor Stick" version "SEN-10321" (HMC5843 magnetometer)
-// #define HW__VERSION_CODE 10724 // SparkFun "9DOF Sensor Stick" version "SEN-10724" (HMC5883L magnetometer)
-
 // OUTPUT OPTIONS
 /*****************************************************************/
-// Set your serial port baud rate used to send out data here!
-#define OUTPUT__BAUD_RATE 57600
 
 // Sensor data output interval in milliseconds
 // This may not work, if faster than 20ms (=50Hz)
 // Code is tuned for 20ms, so better leave it like that
-#define OUTPUT__DATA_INTERVAL 20 // in milliseconds
-
-// Output mode definitions (do not change)
-#define OUTPUT__MODE_CALIBRATE_SENSORS 0 // Outputs sensor min/max values as text for manual calibration
-#define OUTPUT__MODE_ANGLES 1			 // Outputs yaw/pitch/roll in degrees
-#define OUTPUT__MODE_SENSORS_CALIB 2	 // Outputs calibrated sensor values for all 9 axes
-#define OUTPUT__MODE_SENSORS_RAW 3		 // Outputs raw (uncalibrated) sensor values for all 9 axes
-#define OUTPUT__MODE_SENSORS_BOTH 4		 // Outputs calibrated AND raw sensor values for all 9 axes
-// Output format definitions (do not change)
-#define OUTPUT__FORMAT_TEXT 0	// Outputs data as text
-#define OUTPUT__FORMAT_BINARY 1 // Outputs data as binary float
-
-// Select your startup output mode and format here!
-int output_mode = OUTPUT__MODE_ANGLES;
-int output_format = OUTPUT__FORMAT_TEXT;
-
-// Select if serial continuous streaming output is enabled per default on startup.
-#define OUTPUT__STARTUP_STREAM_ON true // true or false
-
-// If set true, an error message will be output if we fail to read sensor data.
-// Message format: "!ERR: reading <sensor>", followed by "\r\n".
-boolean output_errors = false; // true or false
-
+#define DATA_INTERVAL 20 // in milliseconds
 
 // SENSOR CALIBRATION
 /*****************************************************************/
@@ -271,12 +90,6 @@ const float magn_ellipsoid_transform[3][3] = {{0.902, -0.00354, 0.000636}, {-0.0
 /****************** END OF USER SETUP AREA!  *********************/
 /*****************************************************************/
 
-// Check if hardware version code is defined
-#ifndef HW__VERSION_CODE
-	// Generate compile error
-#error YOU HAVE TO SELECT THE HARDWARE YOU ARE USING! See "HARDWARE OPTIONS" in "USER SETUP AREA" at top of Razor_AHRS.ino!
-#endif
-
 #include <Wire.h>
 
 // Sensor calibration scale and offset values
@@ -305,7 +118,6 @@ const float magn_ellipsoid_transform[3][3] = {{0.902, -0.00354, 0.000636}, {-0.0
 #define Ki_YAW 0.00002f
 
 // Stuff
-// #define STATUS_LED_PIN 13			  // Pin number of status LED
 #define GRAVITY 256.0f				  // "1G reference" used for DCM filter and accelerometer calibration
 #define TO_RAD(x) (x * 0.01745329252) // *pi/180
 #define TO_DEG(x) (x * 57.2957795131) // *180/pi
@@ -349,8 +161,6 @@ unsigned long timestamp_old;
 float G_Dt; // Integration time for DCM algorithm
 
 // More output-state variables
-boolean output_stream_on;
-boolean output_single_on;
 int curr_calibration_sensor = 0;
 boolean reset_calibration_session_flag = true;
 int num_accel_errors = 0;
@@ -359,9 +169,9 @@ int num_gyro_errors = 0;
 
 void read_sensors()
 {
-	Read_Gyro();  // Read gyroscope
-	Read_Accel(); // Read accelerometer
-	Read_Magn();  // Read magnetometer
+	Read_Gyro();
+	Read_Accel();
+	Read_Magn();
 }
 
 // Read every sensor and record a time stamp
@@ -426,7 +236,6 @@ void compensate_sensor_errors()
 void check_reset_calibration_session()
 {
 	// Raw sensor values have to be read already, but no error compensation applied
-
 	// Reset this calibration session?
 	if (!reset_calibration_session_flag)
 		return;
@@ -445,36 +254,8 @@ void check_reset_calibration_session()
 	reset_calibration_session_flag = false;
 }
 
-void turn_output_stream_on()
-{
-	output_stream_on = true;
-	// digitalWrite(STATUS_LED_PIN, HIGH);
-}
-
-void turn_output_stream_off()
-{
-	output_stream_on = false;
-	// digitalWrite(STATUS_LED_PIN, LOW);
-}
-
-// Blocks until another byte is available on serial port
-char readChar()
-{
-	while (Serial.available() < 1)
-	{
-	} // Block
-	return Serial.read();
-}
-
 void iniciaRzr()
 {
-	// Init serial output
-	Serial.begin(OUTPUT__BAUD_RATE);
-
-	// Init status LED
-	// pinMode(STATUS_LED_PIN, OUTPUT);
-	// digitalWrite(STATUS_LED_PIN, LOW);
-
 	// Init sensors
 	delay(50); // Give sensors enough time to start
 	I2C_Init();
@@ -485,199 +266,35 @@ void iniciaRzr()
 	// Read sensors, init DCM algorithm
 	delay(20); // Give sensors enough time to collect data
 	reset_sensor_fusion();
-
-	// Init output
-#if (OUTPUT__STARTUP_STREAM_ON == false)
-	turn_output_stream_off();
-#else
-	turn_output_stream_on();
-#endif
-
-	setOutputBinary();
 }
 
-void getOneFrame()
-{
-	output_single_on = true;
-}
-
+bool calibrateMode = false;
 void setCalibrateMode()
 {
-	output_mode = OUTPUT__MODE_CALIBRATE_SENSORS;
+	calibrateMode = true;
 	reset_calibration_session_flag = true;
 }
 
-void calibrateNextSensor()
+void setCalibrateNextSensor()
 {
 	curr_calibration_sensor = (curr_calibration_sensor + 1) % 3;
 	reset_calibration_session_flag = true;
 }
 
-void setOutputAnglesMode()
-{
-	output_mode = OUTPUT__MODE_ANGLES;
-}
-
-void setOutputText()
-{
-	output_format = OUTPUT__FORMAT_TEXT;
-}
-
-void setOutputBinary()
-{
-	output_format = OUTPUT__FORMAT_BINARY;
-}
-
-void setOutputRawSensors()
-{
-	output_mode = OUTPUT__MODE_SENSORS_RAW;
-}
-
-void getCalibratedValues()
-{
-	output_mode = OUTPUT__MODE_SENSORS_CALIB;
-}
-
-void getRawAndCalibratedValues()
-{
-	output_mode = OUTPUT__MODE_SENSORS_BOTH;
-}
-
-void disableStream()
-{
-	turn_output_stream_off();
-	reset_calibration_session_flag = true;
-}
-
-void enableStrem()
-{
-	reset_calibration_session_flag = true;
-	turn_output_stream_on();
-}
-
-void disableOutputErrors()
-{
-	output_errors = false;
-}
-
-void enableOutputErrors()
-{
-	output_errors = true;
-}
-
 float yprRoots[3];
-float* output_angles_roots()
+float* getAnglesRoots()
 {	
-	float ypr[3];
 	yprRoots[0] = TO_DEG(yaw);
 	yprRoots[1] = TO_DEG(pitch);
 	yprRoots[2] = TO_DEG(roll);	
-}
-float* getAnglesRoots()
-{	
 	return yprRoots;
 }
 
-// Main loop
 void processaRzr()
 {
-	// Read incoming control messages
-	// if (Serial.available() >= 2)
-	// {
-	// 	if (Serial.read() == '#') // Start of new control message
-	// 	{
-	// 		int command = Serial.read(); // Commands
-
-	// 		if (command == 'f')
-	// 		{
-	// 			getOneFrame();
-	// 		}			
-	// 		else if (command == 'o') // Set _o_utput mode
-	// 		{
-	// 			char output_param = readChar();
-
-	// 			if (output_param == 'n')
-	// 			{
-	// 				calibrateNextSensor();
-	// 			}
-	// 			else if (output_param == 't')
-	// 			{
-	// 				setOutputText();
-	// 				setOutputAnglesMode();
-	// 			}
-	// 			else if (output_param == 'b')
-	// 			{
-	// 				setOutputBinary();
-	// 				setOutputAnglesMode();
-	// 			}
-	// 			else if (output_param == 'c')
-	// 			{
-	// 				setCalibrateMode();
-	// 			}
-	// 			else if (output_param == 's')
-	// 			{
-	// 				char values_param = readChar();
-	// 				char format_param = readChar();
-	// 				if (values_param == 'r') // Output _r_aw sensor values
-	// 				{
-	// 					setOutputRawSensors();
-	// 				}
-	// 				else if (values_param == 'c') // Output _c_alibrated sensor values
-	// 				{
-	// 					getCalibratedValues();
-	// 				}
-	// 				else if (values_param == 'b') // Output _b_oth sensor values (raw and calibrated)
-	// 				{
-	// 					getRawAndCalibratedValues();
-	// 				}
-
-	// 				if (format_param == 't') // Output values as _t_text
-	// 				{
-	// 					setOutputText();
-	// 				}
-	// 				else if (format_param == 'b') // Output values in _b_inary format
-	// 				{
-	// 					setOutputBinary();
-	// 				}
-	// 			}
-	// 			else if (output_param == '0') // Disable continuous streaming output
-	// 			{
-	// 				disableStream();
-	// 			}
-	// 			else if (output_param == '1') // Enable continuous streaming output
-	// 			{
-	// 				enableStrem();
-	// 			}
-	// 			else if (output_param == 'e') // _e_rror output settings
-	// 			{
-	// 				char error_param = readChar();
-	// 				if (error_param == '0')
-	// 				{
-	// 					disableOutputErrors();
-	// 				}
-	// 				else if (error_param == '1')
-	// 				{
-	// 					enableOutputErrors();
-	// 				}
-	// 				else if (error_param == 'c') // get error count
-	// 				{
-	// 					Serial.print("#AMG-ERR:");
-	// 					Serial.print(num_accel_errors);
-	// 					Serial.print(",");
-	// 					Serial.print(num_magn_errors);
-	// 					Serial.print(",");
-	// 					Serial.println(num_gyro_errors);
-	// 				}
-	// 			}
-	// 		}
-	// 	}
-	// 	else
-	// 	{
-	// 	} // Skip character
-	// }
-
+	
 	// Time to read the sensors again?
-	if ((millis() - timestamp) >= OUTPUT__DATA_INTERVAL)
+	if ((millis() - timestamp) >= DATA_INTERVAL)
 	{
 		timestamp_old = timestamp;
 		timestamp = millis();
@@ -689,13 +306,12 @@ void processaRzr()
 		// Update sensor readings
 		read_sensors();
 
-		if (output_mode == OUTPUT__MODE_CALIBRATE_SENSORS) // We're in calibration mode
+		if (calibrateMode)
 		{
 			check_reset_calibration_session(); // Check if this session needs a reset
-			if (output_stream_on || output_single_on)
-				output_calibration(curr_calibration_sensor);
-		}
-		else if (output_mode == OUTPUT__MODE_ANGLES) // Output angles
+			calibrate_sensors(curr_calibration_sensor);
+		}		
+		else // Output sensor values
 		{
 			// Apply sensor calibration
 			compensate_sensor_errors();
@@ -706,34 +322,19 @@ void processaRzr()
 			Normalize();
 			Drift_correction();
 			Euler_angles();
-
-			if (output_stream_on || output_single_on)
-				// output_angles();
-				output_angles_roots();
 		}
-		else // Output sensor values
-		{
-			if (output_stream_on || output_single_on)
-				output_sensors();
-		}
-
-		output_single_on = false;
 
 #if DEBUG__PRINT_LOOP_TIME == true
-		Serial.print("loop time (ms) = ");
-		Serial.println(millis() - timestamp);
+		escreveLog("loop time (ms) = " + (String)(millis() - timestamp), 1);
 #endif
 	}
 #if DEBUG__PRINT_LOOP_TIME == true
 	else
-	{
-		Serial.println("waiting...");
-	}
+		escreveLog("waiting...", 1);
 #endif
 }
 
 // ===================================================================================
-/* This file is part of the Razor AHRS Firmware */
 
 void Compass_Heading()
 {
@@ -757,8 +358,8 @@ void Compass_Heading()
 	MAG_Heading = atan2(-mag_y, mag_x);
 }
 
+
 // ===================================================================================
-/* This file is part of the Razor AHRS Firmware */
 
 // DCM algorithm
 
@@ -884,8 +485,8 @@ void Euler_angles(void)
 	yaw = atan2(DCM_Matrix[1][0], DCM_Matrix[0][0]);
 }
 
+
 // ===================================================================================
-/* This file is part of the Razor AHRS Firmware */
 
 // Computes the dot product of two vectors
 float Vector_Dot_Product(const float v1[3], const float v2[3])
@@ -975,70 +576,37 @@ void init_rotation_matrix(float m[3][3], float yaw, float pitch, float roll)
 	m[2][2] = c1 * c2;
 }
 
-// ===================================================================================
-/* This file is part of the Razor AHRS Firmware */
 
-// Output angles: yaw, pitch, roll
-void output_angles()
-{
-	if (output_format == OUTPUT__FORMAT_BINARY)
-	{
-		float ypr[3];
-		ypr[0] = TO_DEG(yaw);
-		ypr[1] = TO_DEG(pitch);
-		ypr[2] = TO_DEG(roll);
-		Serial.write((byte *)ypr, 12); // No new-line
-	}
-	else if (output_format == OUTPUT__FORMAT_TEXT)
-	{
-		Serial.print("#YPR=");
-		Serial.print(TO_DEG(yaw));
-		Serial.print(",");
-		Serial.print(TO_DEG(pitch));
-		Serial.print(",");
-		Serial.print(TO_DEG(roll));
-		Serial.println();
-	}
-}
-
-void output_calibration(int calibration_sensor)
+void calibrate_sensors(int calibration_sensor)
 {
 	if (calibration_sensor == 0) // Accelerometer
 	{
 		// Output MIN/MAX values
-		Serial.print("accel x,y,z (min/max) = ");
+		escreveLog("accel (min/max) = ", 1);
 		for (int i = 0; i < 3; i++)
 		{
 			if (accel[i] < accel_min[i])
 				accel_min[i] = accel[i];
 			if (accel[i] > accel_max[i])
 				accel_max[i] = accel[i];
-			Serial.print(accel_min[i]);
-			Serial.print("/");
-			Serial.print(accel_max[i]);
-			if (i < 2)
-				Serial.print("  ");
-			else
-				Serial.println();
+			escreveLog((String)accel_min[i], 1);
+			escreveLog("/", 1);
+			escreveLog((String)accel_max[i] + "\n", 1);
 		}
 	}
 	else if (calibration_sensor == 1) // Magnetometer
 	{
 		// Output MIN/MAX values
-		Serial.print("magn x,y,z (min/max) = ");
+		escreveLog("magn (min/max) = ", 1);
 		for (int i = 0; i < 3; i++)
 		{
 			if (magnetom[i] < magnetom_min[i])
 				magnetom_min[i] = magnetom[i];
 			if (magnetom[i] > magnetom_max[i])
 				magnetom_max[i] = magnetom[i];
-			Serial.print(magnetom_min[i]);
-			Serial.print("/");
-			Serial.print(magnetom_max[i]);
-			if (i < 2)
-				Serial.print("  ");
-			else
-				Serial.println();
+			escreveLog((String)magnetom_min[i], 1);
+			escreveLog("/", 1);
+			escreveLog((String)magnetom_max[i] + "\n", 1);
 		}
 	}
 	else if (calibration_sensor == 2) // Gyroscope
@@ -1049,99 +617,19 @@ void output_calibration(int calibration_sensor)
 		gyro_num_samples++;
 
 		// Output current and averaged gyroscope values
-		Serial.print("gyro x,y,z (current/average) = ");
+		escreveLog("gyro (current/average) = ", 1);
 		for (int i = 0; i < 3; i++)
 		{
-			Serial.print(gyro[i]);
-			Serial.print("/");
-			Serial.print(gyro_average[i] / (float)gyro_num_samples);
-			if (i < 2)
-				Serial.print("  ");
-			else
-				Serial.println();
+			escreveLog((String)gyro[i], 1);
+			escreveLog("/", 1);
+			escreveLog((String)(gyro_average[i] / (float)gyro_num_samples) + "\n", 1);
 		}
+		calibrateMode = false;
 	}
 }
 
-void output_sensors_text(char raw_or_calibrated)
-{
-	Serial.print("#A-");
-	Serial.print(raw_or_calibrated);
-	Serial.print('=');
-	Serial.print(accel[0]);
-	Serial.print(",");
-	Serial.print(accel[1]);
-	Serial.print(",");
-	Serial.print(accel[2]);
-	Serial.println();
-
-	Serial.print("#M-");
-	Serial.print(raw_or_calibrated);
-	Serial.print('=');
-	Serial.print(magnetom[0]);
-	Serial.print(",");
-	Serial.print(magnetom[1]);
-	Serial.print(",");
-	Serial.print(magnetom[2]);
-	Serial.println();
-
-	Serial.print("#G-");
-	Serial.print(raw_or_calibrated);
-	Serial.print('=');
-	Serial.print(gyro[0]);
-	Serial.print(",");
-	Serial.print(gyro[1]);
-	Serial.print(",");
-	Serial.print(gyro[2]);
-	Serial.println();
-}
-
-void output_sensors_binary()
-{
-	Serial.write((byte *)accel, 12);
-	Serial.write((byte *)magnetom, 12);
-	Serial.write((byte *)gyro, 12);
-}
-
-void output_sensors()
-{
-	if (output_mode == OUTPUT__MODE_SENSORS_RAW)
-	{
-		if (output_format == OUTPUT__FORMAT_BINARY)
-			output_sensors_binary();
-		else if (output_format == OUTPUT__FORMAT_TEXT)
-			output_sensors_text('R');
-	}
-	else if (output_mode == OUTPUT__MODE_SENSORS_CALIB)
-	{
-		// Apply sensor calibration
-		compensate_sensor_errors();
-
-		if (output_format == OUTPUT__FORMAT_BINARY)
-			output_sensors_binary();
-		else if (output_format == OUTPUT__FORMAT_TEXT)
-			output_sensors_text('C');
-	}
-	else if (output_mode == OUTPUT__MODE_SENSORS_BOTH)
-	{
-		if (output_format == OUTPUT__FORMAT_BINARY)
-		{
-			output_sensors_binary();
-			compensate_sensor_errors();
-			output_sensors_binary();
-		}
-		else if (output_format == OUTPUT__FORMAT_TEXT)
-		{
-			output_sensors_text('R');
-			compensate_sensor_errors();
-			output_sensors_text('C');
-		}
-	}
-}
 
 // ===================================================================================
-/* This file is part of the Razor AHRS Firmware */
-
 // I2C code to read the sensors
 
 // Sensor I2C addresses
@@ -1150,13 +638,8 @@ void output_sensors()
 #define GYRO_ADDRESS ((int16_t)0x69)  // 0x68 = 0xD0 / 2
 
 // Arduino backward compatibility macros
-//#if ARDUINO >= 100
 #define WIRE_SEND(b) Wire.write((byte)b)
 #define WIRE_RECEIVE() Wire.read()
-//#else
-//  #define WIRE_SEND(b) Wire.send(b)
-//  #define WIRE_RECEIVE() Wire.receive()
-//#endif
 
 void I2C_Init()
 {
@@ -1214,8 +697,7 @@ void Read_Accel()
 	else
 	{
 		num_accel_errors++;
-		if (output_errors)
-			Serial.println("!ERR: reading accelerometer");
+		escreveLog("!ERR: reading accelerometer", 2);
 	}
 }
 
@@ -1254,37 +736,16 @@ void Read_Magn()
 
 	if (i == 6) // All bytes received?
 	{
-// 9DOF Razor IMU SEN-10125 using HMC5843 magnetometer
-#if HW__VERSION_CODE == 10125
-		// MSB byte first, then LSB; X, Y, Z
-		magnetom[0] = -1 * (int16_t)(((((uint16_t)buff[2]) << 8) | buff[3])); // X axis (internal sensor -y axis)
-		magnetom[1] = -1 * (int16_t)(((((uint16_t)buff[0]) << 8) | buff[1])); // Y axis (internal sensor -x axis)
-		magnetom[2] = -1 * (int16_t)(((((uint16_t)buff[4]) << 8) | buff[5])); // Z axis (internal sensor -z axis)
-// 9DOF Razor IMU SEN-10736 using HMC5883L magnetometer
-#elif HW__VERSION_CODE == 10736
 		// MSB byte first, then LSB; Y and Z reversed: X, Z, Y
 		magnetom[0] = -1 * (int16_t)(((((uint16_t)buff[4]) << 8) | buff[5])); // X axis (internal sensor -y axis)
 		magnetom[1] = -1 * (int16_t)(((((uint16_t)buff[0]) << 8) | buff[1])); // Y axis (internal sensor -x axis)
 		magnetom[2] = -1 * (int16_t)(((((uint16_t)buff[2]) << 8) | buff[3])); // Z axis (internal sensor -z axis)
 																			  // 9DOF Sensor Stick SEN-10183 and SEN-10321 using HMC5843 magnetometer
-#elif (HW__VERSION_CODE == 10183) || (HW__VERSION_CODE == 10321)
-		// MSB byte first, then LSB; X, Y, Z
-		magnetom[0] = (((uint16_t)buff[0]) << 8) | buff[1];					  // X axis (internal sensor x axis)
-		magnetom[1] = -1 * (int16_t)(((((uint16_t)buff[2]) << 8) | buff[3])); // Y axis (internal sensor -y axis)
-		magnetom[2] = -1 * (int16_t)(((((uint16_t)buff[4]) << 8) | buff[5])); // Z axis (internal sensor -z axis)
-																			  // 9DOF Sensor Stick SEN-10724 using HMC5883L magnetometer
-#elif HW__VERSION_CODE == 10724
-		// MSB byte first, then LSB; Y and Z reversed: X, Z, Y
-		magnetom[0] = (int16_t)((((uint16_t)buff[0]) << 8) | buff[1]);		  // X axis (internal sensor x axis)
-		magnetom[1] = -1 * (int16_t)(((((uint16_t)buff[4]) << 8) | buff[5])); // Y axis (internal sensor -y axis)
-		magnetom[2] = -1 * (int16_t)(((((uint16_t)buff[2]) << 8) | buff[3])); // Z axis (internal sensor -z axis)
-#endif
 	}
 	else
 	{
 		num_magn_errors++;
-		if (output_errors)
-			Serial.println("!ERR: reading magnetometer");
+		escreveLog("!ERR: reading magnetometer", 1);
 	}
 }
 
@@ -1400,13 +861,6 @@ void Read_Gyro()
 	gyro[0] = -1 * (int16_t)(((((uint16_t)buff[1]) << 8) | buff[0])); // X axis (internal sensor -y axis)
 	gyro[1] = -1 * (int16_t)(((((uint16_t)buff[3]) << 8) | buff[2])); // Y axis (internal sensor -x axis)
 	gyro[2] = -1 * (int16_t)(((((uint16_t)buff[5]) << 8) | buff[4])); // Z axis (internal sensor -z axis)
-
-	// 	else
-	// 	{
-	// 		num_gyro_errors++;
-	// 		if (output_errors)
-	// 			Serial.println("!ERR: reading gyroscope");
-	// 	}
 }
 
 // ===================================================================================
