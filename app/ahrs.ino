@@ -751,46 +751,75 @@ void Read_Magn()
 
 void Gyro_Init()
 {
-	// Power up reset defaults
+	// CTRL_REG1 - 0x20
+	// Bit7 | Bit6 | Bit5 | Bit4 | Bit3 | Bit2 | Bit1 | Bit0
+	// DR1  | DR0  | BW1  | BW0  | PD   | Zen  | Yen  | Xen
 	Wire.beginTransmission(GYRO_ADDRESS);
 	WIRE_SEND(0x20);
-	WIRE_SEND(0b00001111);
+	// WIRE_SEND(0b00001111); // 100Hz
+	WIRE_SEND(0b01101111); // 
 	Wire.endTransmission();
 	delay(5);
 
-	// If you'd like to adjust/use the HPF, you can edit the line below to configure CTRL_REG2:
+	// CTRL_REG2 - 0x21
+	// Bit7 | Bit6 | Bit5 | Bit4 | Bit3 | Bit2 | Bit1 | Bit0
+	// 0    | 0    | HPM1 | HPM0 | HPCF3| HPCF2| HPCF1| HPCF0
 	Wire.beginTransmission(GYRO_ADDRESS);
 	WIRE_SEND(0x21);
 	// WIRE_SEND(0b00000000);
-	WIRE_SEND(0b00100010);
+	WIRE_SEND(0b00100000);
 	Wire.endTransmission();
 	delay(5);
 
-	// Configure CTRL_REG3 to generate data ready interrupt on INT2
-	// No interrupts used on INT1, if you'd like to configure INT1
-	// or INT2 otherwise, consult the datasheet:
+	// CTRL_REG3 - 0x22
+	// Bit7    | Bit6    | Bit5      | Bit4  | Bit3    | Bit2   | Bit1   | Bit0
+	// I1_Int1 | I1_Boot | H_Lactive | PP_OD | I2_DRDY | I2_WTM |I2_ORun | I2_Empty
 	Wire.beginTransmission(GYRO_ADDRESS);
 	WIRE_SEND(0x22);
 	WIRE_SEND(0b00001000);
 	Wire.endTransmission();
 	delay(5);
 
-	// CTRL_REG4 controls the full-scale range, among other things:
+	// CTRL_REG4 - 0x23
+	// Bit7 | Bit6 | Bit5 | Bit4 | Bit3 | Bit2 | Bit1 | Bit0
+	// BDU  | BLE  | FS1  | FS0  | -    | ST1  | ST0  | SIM
 	Wire.beginTransmission(GYRO_ADDRESS);
 	WIRE_SEND(0x23);
 	//WIRE_SEND(0b00000000); // 250 dps
 	//WIRE_SEND(0b00010000); // 500 dps
-	WIRE_SEND(0b00110000); // 2000 dps
+	// WIRE_SEND(0b00110000); // 2000 dps
+	WIRE_SEND(0b10110000); // 2000 dps
 	Wire.endTransmission();
 	delay(5);
 
-	// CTRL_REG5 controls high-pass filtering of outputs, use it
-	// if you'd like:
+	// CTRL_REG5 - 0x24
+	// Bit7 | Bit6    | Bit5 | Bit4 | Bit3      | Bit2      | Bit1     | Bit0
+	// BOOT | FIFO_EN | --   | HPen | INT1_Sel1 | INT1_Sel0 | Out_Sel1 | Out_Sel0
 	Wire.beginTransmission(GYRO_ADDRESS);
 	WIRE_SEND(0x24);
-	WIRE_SEND(0b00011100);
+	// WIRE_SEND(0b00011100);
+	WIRE_SEND(0b00011010);
 	Wire.endTransmission();
 	delay(5);
+
+	// STATUS_REG - 0x27
+	// Bit7  | Bit6 | Bit5 | Bit4 | Bit3  | Bit2 | Bit1 | Bit0
+	// ZYXOR | ZOR  | YOR  | XOR  | ZYXDA | ZDA  | YDA  | XDA
+	Wire.beginTransmission(GYRO_ADDRESS);
+	WIRE_SEND(0x27);
+	WIRE_SEND(0b10000000);
+	Wire.endTransmission();
+	delay(5);
+	
+	// INT1_CFG - 0x30
+	// Bit7   | Bit6 | Bit5 | Bit4 | Bit3 | Bit2 | Bit1 | Bit0
+	// AND/OR | LIR  | ZHIE | ZLIE | YHIE | YLIE | XHIE | XLIE
+	// Wire.beginTransmission(GYRO_ADDRESS);
+	// WIRE_SEND(0x30);
+	// WIRE_SEND(0b00000000);
+	// Wire.endTransmission();
+	// delay(5);
+
 }
 
 // Reads x, y and z gyroscope registers

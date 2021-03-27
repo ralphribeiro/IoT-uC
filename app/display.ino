@@ -89,13 +89,16 @@ void mostraTela1()
     float* angles = getAnglesRoots();
     display.setCursor(60, 20);
     display.print("Y:");
-    display.print(angles[0], 1);
+    display.print((int)angles[0]);
+    display.drawCircle(display.getCursorX() + 1, display.getCursorY() + 2, 1, WHITE);
     display.setCursor(60, 30);
     display.print("P:");
-    display.print(angles[1], 1);
+    display.print((int)angles[1]);
+    display.drawCircle(display.getCursorX() + 1, display.getCursorY() + 2, 1, WHITE);
     display.setCursor(60, 40);
     display.print("R:");
-    display.print(angles[2], 1);
+    display.print((int)angles[2]);
+    display.drawCircle(display.getCursorX() + 1, display.getCursorY() + 2, 1, WHITE);
 }
 
 // void consoleAcel(const Tuple&, std::ostream&)
