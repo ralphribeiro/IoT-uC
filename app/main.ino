@@ -30,7 +30,7 @@ void iniciaES()
     iniciaDisplay();
     iniciaDHT();
     iniciaBMP();
-    // iniciaWIFI();
+    iniciaWIFI();
     // iniciaBroker();
     iniciaRzr();
     // iniciaBT();
@@ -49,7 +49,7 @@ void processaES()
     if (nivelLog == 0)
         processaDisplay(tempoDisplay);
 
-    // processaWIFI(tempoWifi);
+    processaWIFI(tempoWifi);
     // processaBT();
     // processaSaida();
     // processaBroker();

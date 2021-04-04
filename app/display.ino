@@ -99,6 +99,15 @@ void mostraTela1()
     display.print("R:");
     display.print((int)angles[2]);
     display.drawCircle(display.getCursorX() + 1, display.getCursorY() + 2, 1, WHITE);
+
+    char* dia = obtemDia();
+    display.setCursor(0, 40);
+    display.print(dia);
+
+    String tempo = obtemTempo();
+    display.setCursor(0, 50);
+    display.print(tempo);
+
 }
 
 // void consoleAcel(const Tuple&, std::ostream&)
