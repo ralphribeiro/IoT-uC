@@ -81,9 +81,9 @@ void mostraTela1()
     display.setCursor(110, 10);
     display.print(stsBroker);
 
-    String topico = obtemTopico();
-    display.setCursor(50, 20);
-    display.print(topico);
+    // String topico = obtemTopico();
+    // display.setCursor(50, 20);
+    // display.print(topico);
 
 
     float* angles = getAnglesRoots();
