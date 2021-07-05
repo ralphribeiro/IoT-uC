@@ -17,18 +17,6 @@ bool statusBroker()
 WiFiClient clientWifi;
 PubSubClient clientBroker(clientWifi);
 
-boolean reconecta()
-{
-    if (clientBroker.connect(idHW))
-    {
-        escreveLog("Conectando ao Broker", 1);
-        // clientBroker.publish(topicoPub, "conectado");
-        clientBroker.subscribe(topicoSub);
-        escreveLog("Conectado", 1);
-    }
-    return clientBroker.connected();
-}
-
 void callback(char *topic, byte *payload, unsigned int length)
 {
     String msg = "";
@@ -47,6 +35,9 @@ void callback(char *topic, byte *payload, unsigned int length)
 }
 
 long ultimaTentativeReconexao = 0;
+unsigned long intervaloReconexao = 0;
+unsigned int intervaloReconexaoMax = 5 * 60 * 1000;
+unsigned int intervaloReconexaoMin = 2000;
 
 void iniciaBroker()
 {
@@ -54,6 +45,19 @@ void iniciaBroker()
     clientBroker.setServer(host, port);
     clientBroker.setCallback(callback);
     ultimaTentativeReconexao = 0;
+    intervaloReconexao = intervaloReconexaoMin;
+}
+
+boolean reconecta()
+{
+    if (clientBroker.connect(idHW))
+    {
+        escreveLog("Conectando ao Broker", 1);
+        // clientBroker.publish(topicoPub, "conectado");
+        clientBroker.subscribe(topicoSub);
+        escreveLog("Conectado", 1);
+    }
+    return clientBroker.connected();
 }
 
 void processaBroker()
@@ -61,11 +65,18 @@ void processaBroker()
     if (!_statusBroker)
     {
         long agora = millis();
-        if (agora - ultimaTentativeReconexao > 2000)
+        if (agora - ultimaTentativeReconexao > intervaloReconexao)
+        {
             ultimaTentativeReconexao = reconecta() ? 0 : agora;
+            if (intervaloReconexao <= intervaloReconexaoMax / 10)
+                intervaloReconexao *= 10;
+        }
     }
     else
+    {
+        intervaloReconexao = intervaloReconexaoMin;
         clientBroker.loop();
+    }
 
     _statusBroker = clientBroker.connected();
 }
