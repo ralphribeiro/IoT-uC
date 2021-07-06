@@ -42,9 +42,9 @@ void processaDisplay(int intervaloDisplay)
 
 void mostraTela1()
 {
-    
+
     display.clearDisplay();
-    
+
     float dhtTemp = obtemTemperaturaDHT();
     display.setTextSize(2);
     display.setCursor(0, 0);
@@ -53,7 +53,7 @@ void mostraTela1()
     display.setCursor(display.getCursorX() + 9, 0);
     display.setTextSize(2);
     display.println("C");
-    
+
     float bmpTemp = obtemTemperaturaBMP();
     display.setTextSize(1);
     display.setCursor(72, 0);
@@ -61,7 +61,7 @@ void mostraTela1()
     display.drawCircle(display.getCursorX() + 1, display.getCursorY() + 2, 1, WHITE);
     display.setCursor(display.getCursorX() + 4, display.getCursorY());
     display.print("C");
-    
+
     float dhtUmi = obtemUmidadeDHT();
     display.setCursor(72, 10);
     display.print(dhtUmi, 1);
@@ -69,14 +69,14 @@ void mostraTela1()
 
     float bmpPressao = obtemPressao();
     display.setCursor(0, 20);
-    display.print(bmpPressao/1000, 2);
+    display.print(bmpPressao / 1000, 2);
     display.print("kPa");
 
     bool stsWifi = statusWifi();
     display.setCursor(110, 0);
     display.setTextSize(1);
     display.print(stsWifi);
-    
+
     bool stsBroker = statusBroker();
     display.setCursor(110, 10);
     display.print(stsBroker);
@@ -85,8 +85,7 @@ void mostraTela1()
     // display.setCursor(50, 20);
     // display.print(topico);
 
-
-    float* angles = getAnglesRoots();
+    float *angles = getAnglesRoots();
     display.setCursor(60, 20);
     display.print("Y:");
     display.print((int)angles[0]);
@@ -100,7 +99,7 @@ void mostraTela1()
     display.print((int)angles[2]);
     display.drawCircle(display.getCursorX() + 1, display.getCursorY() + 2, 1, WHITE);
 
-    char* dia = obtemDia();
+    char *dia = obtemDia();
     display.setCursor(0, 40);
     display.print(dia);
 
@@ -108,28 +107,14 @@ void mostraTela1()
     display.setCursor(0, 50);
     display.print(tempo);
 
+    float vBat = obtemNivelBateria();
+    display.setCursor(0, 30);
+    display.print(vBat, 1);
+    display.print("%");
 }
-
-// void consoleAcel(const Tuple&, std::ostream&)
-// {
-
-// }
 
 void mostraLog(String s)
 {
     display.print(s);
     display.display();
 }
-
-// void mostraHora()
-// {
-//     display.clearDisplay();
-//     display.setCursor(0, 0);
-//     display.setTextSize(2);
-//     display.print(hora);
-//     display.print(":");
-//     display.print(minuto);
-//     display.print(":");
-//     display.print(segundo);
-//     display.display();
-// }

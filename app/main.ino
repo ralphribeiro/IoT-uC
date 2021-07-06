@@ -27,6 +27,7 @@ void loop()
 
 void iniciaES()
 {
+    iniciaVoltimetro();
     iniciaDisplay();
     iniciaDHT();
     iniciaBMP();
@@ -36,13 +37,15 @@ void iniciaES()
     // iniciaBT();
 }
 
+uint16_t tempoVBat = 5000;
 uint16_t tempoDisplay = 50;
 uint16_t tempoBmp = 1000;
 uint16_t tempoWifi = 5000;
 
 void processaES()
 {
-    // processaRzr();
+    processaVoltimetro(tempoVBat);
+    // processaRzr();    
     processaDHT();
     processaBMP(tempoBmp);
 
