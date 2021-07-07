@@ -110,7 +110,7 @@ void mostraTela1()
     float vBat = obtemNivelBateria();
     display.setCursor(0, 30);
     display.print(vBat, 1);
-    display.print("%");
+    display.print("V");
 }
 
 void mostraLog(String s)
