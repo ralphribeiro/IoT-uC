@@ -8,7 +8,7 @@ void iniciaBMP()
 {
     if (!bmp.begin(BMP085_HIGHRES))
     {
-        escreveLog("Nao foi possivel conectar ao BMP085!\n", 2);
+        logging("Nao foi possivel conectar ao BMP085!\n", 2);
         while (1)
             ;
     }

@@ -325,12 +325,12 @@ void processaRzr()
 		}
 
 #if DEBUG__PRINT_LOOP_TIME == true
-		escreveLog("loop time (ms) = " + (String)(millis() - timestamp), 1);
+		logging("loop time (ms) = " + (String)(millis() - timestamp), 1);
 #endif
 	}
 #if DEBUG__PRINT_LOOP_TIME == true
 	else
-		escreveLog("waiting...", 1);
+		logging("waiting...", 1);
 #endif
 }
 
@@ -582,31 +582,31 @@ void calibrate_sensors(int calibration_sensor)
 	if (calibration_sensor == 0) // Accelerometer
 	{
 		// Output MIN/MAX values
-		escreveLog("accel (min/max) = ", 1);
+		logging("accel (min/max) = ", 1);
 		for (int i = 0; i < 3; i++)
 		{
 			if (accel[i] < accel_min[i])
 				accel_min[i] = accel[i];
 			if (accel[i] > accel_max[i])
 				accel_max[i] = accel[i];
-			escreveLog((String)accel_min[i], 1);
-			escreveLog("/", 1);
-			escreveLog((String)accel_max[i] + "\n", 1);
+			logging((String)accel_min[i], 1);
+			logging("/", 1);
+			logging((String)accel_max[i] + "\n", 1);
 		}
 	}
 	else if (calibration_sensor == 1) // Magnetometer
 	{
 		// Output MIN/MAX values
-		escreveLog("magn (min/max) = ", 1);
+		logging("magn (min/max) = ", 1);
 		for (int i = 0; i < 3; i++)
 		{
 			if (magnetom[i] < magnetom_min[i])
 				magnetom_min[i] = magnetom[i];
 			if (magnetom[i] > magnetom_max[i])
 				magnetom_max[i] = magnetom[i];
-			escreveLog((String)magnetom_min[i], 1);
-			escreveLog("/", 1);
-			escreveLog((String)magnetom_max[i] + "\n", 1);
+			logging((String)magnetom_min[i], 1);
+			logging("/", 1);
+			logging((String)magnetom_max[i] + "\n", 1);
 		}
 	}
 	else if (calibration_sensor == 2) // Gyroscope
@@ -617,12 +617,12 @@ void calibrate_sensors(int calibration_sensor)
 		gyro_num_samples++;
 
 		// Output current and averaged gyroscope values
-		escreveLog("gyro (current/average) = ", 1);
+		logging("gyro (current/average) = ", 1);
 		for (int i = 0; i < 3; i++)
 		{
-			escreveLog((String)gyro[i], 1);
-			escreveLog("/", 1);
-			escreveLog((String)(gyro_average[i] / (float)gyro_num_samples) + "\n", 1);
+			logging((String)gyro[i], 1);
+			logging("/", 1);
+			logging((String)(gyro_average[i] / (float)gyro_num_samples) + "\n", 1);
 		}
 		calibrateMode = false;
 	}
@@ -697,7 +697,7 @@ void Read_Accel()
 	else
 	{
 		num_accel_errors++;
-		escreveLog("!ERR: reading accelerometer", 2);
+		logging("!ERR: reading accelerometer", 2);
 	}
 }
 
@@ -745,7 +745,7 @@ void Read_Magn()
 	else
 	{
 		num_magn_errors++;
-		escreveLog("!ERR: reading magnetometer", 1);
+		logging("!ERR: reading magnetometer", 1);
 	}
 }
 

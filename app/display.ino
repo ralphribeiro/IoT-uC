@@ -12,7 +12,7 @@ void iniciaDisplay()
 {
     if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C))
     {
-        escreveLog("Falha na inicialização da tela", 2);
+        logging("Falha na inicialização da tela", 2);
         for (;;)
             ;
     }

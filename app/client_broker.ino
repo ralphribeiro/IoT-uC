@@ -41,7 +41,7 @@ unsigned int intervaloReconexaoMin = 2000;
 
 void iniciaBroker()
 {
-    escreveLog("Iniciando cliente Broker", 1);
+    logging("Iniciando cliente Broker", 1);
     clientBroker.setServer(host, port);
     clientBroker.setCallback(callback);
     ultimaTentativeReconexao = 0;
@@ -52,10 +52,10 @@ boolean reconecta()
 {
     if (clientBroker.connect(idHW))
     {
-        escreveLog("Conectando ao Broker", 1);
+        logging("Conectando ao Broker", 1);
         // clientBroker.publish(topicoPub, "conectado");
         clientBroker.subscribe(topicoSub);
-        escreveLog("Conectado", 1);
+        logging("Conectado", 1);
     }
     return clientBroker.connected();
 }
@@ -85,7 +85,7 @@ void pubBroker(String msg)
 {
     if (_statusBroker)
     {
-        escreveLog("Mensagem publicada", 1);
+        logging("Mensagem publicada", 1);
         String pub_msg = ((String)idHW + "," + msg);
         clientBroker.publish(topicoPub, pub_msg.c_str(), false);
     }

@@ -45,7 +45,7 @@ void processaDHT()
 
         if (isnan(h) || isnan(t))
         {
-            escreveLog("Falha ao ler o sensor DHT", 2);
+            logging("Falha ao ler o sensor DHT", 2);
             return;
         }
 

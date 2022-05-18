@@ -8,7 +8,7 @@ unsigned short int nivelLog = 0;
 1 - debug
 2 - erros
 */
-void escreveLog(String msg, unsigned short int nivLog)
+void logging(String msg, unsigned short int nivLog)
 {
     if (nivLog == nivelLog)
         mostraLog(msg);
@@ -27,13 +27,13 @@ void loop()
 
 void iniciaES()
 {
-    iniciaVoltimetro();
+    // iniciaVoltimetro();
     iniciaDisplay();
     iniciaDHT();
     iniciaBMP();
     iniciaWIFI();
-    iniciaBroker();
-    // iniciaRzr();
+    // iniciaBroker();
+    iniciaRzr();
     // iniciaBT();
 }
 
@@ -44,8 +44,8 @@ uint16_t tempoWifi = 5000;
 
 void processaES()
 {
-    processaVoltimetro(tempoVBat);
-    // processaRzr();    
+    // processaVoltimetro(tempoVBat);
+    processaRzr();
     processaDHT();
     processaBMP(tempoBmp);
 
@@ -55,5 +55,5 @@ void processaES()
     processaWIFI(tempoWifi);
     // processaBT();
     // processaSaida();
-    processaBroker();
+    // processaBroker();
 }
