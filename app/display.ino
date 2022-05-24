@@ -77,9 +77,9 @@ void mostraTela1()
     display.setTextSize(1);
     display.print(stsWifi);
 
-    bool stsBroker = statusBroker();
-    display.setCursor(110, 10);
-    display.print(stsBroker);
+    // bool stsBroker = statusBroker();
+    // display.setCursor(110, 10);
+    // display.print(stsBroker);
 
     // String topico = obtemTopico();
     // display.setCursor(50, 20);
@@ -99,18 +99,18 @@ void mostraTela1()
     display.print((int)angles[2]);
     display.drawCircle(display.getCursorX() + 1, display.getCursorY() + 2, 1, WHITE);
 
-    char *dia = obtemDia();
-    display.setCursor(0, 40);
-    display.print(dia);
+    // char *dia = obtemDia();
+    // display.setCursor(0, 40);
+    // display.print(dia);
 
-    String tempo = obtemTempo();
-    display.setCursor(0, 50);
-    display.print(tempo);
+    // String tempo = obtemTempo();
+    // display.setCursor(0, 50);
+    // display.print(tempo);
 
-    float vBat = obtemNivelBateria();
-    display.setCursor(0, 30);
-    display.print(vBat, 1);
-    display.print("V");
+    // float vBat = obtemNivelBateria();
+    // display.setCursor(0, 30);
+    // display.print(vBat, 1);
+    // display.print("V");
 }
 
 void mostraLog(String s)

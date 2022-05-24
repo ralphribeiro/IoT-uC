@@ -43,9 +43,6 @@ void processaBMP(int intervaloBMP)
         altitude = bmp.readAltitude();
         pressao = bmp.readPressure();
 
-        pubBroker("sensor=BMP temperatura=" + (String)temperaturaBMP);
-        pubBroker("sensor=BMP pressao=" + (String)pressao);
-
         ultimaLeituraBMP = agora;
     }
 }

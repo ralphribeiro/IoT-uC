@@ -1,35 +1,35 @@
-#include <Arduino.h>
+// #include <Arduino.h>
 
-uint8_t analogPin = A0;
+// uint8_t analogPin = A0;
 
-float r1 = 100400.0;
-float r2 = 10020.0;
-float tensao = 0;
+// float r1 = 100400.0;
+// float r2 = 10020.0;
+// float tensao = 0;
 
-void iniciaVoltimetro()
-{
-    pinMode(analogPin, INPUT);
-}
+// void iniciaVoltimetro()
+// {
+//     pinMode(analogPin, INPUT);
+// }
 
-long ultimaLeituraVolt = 0;
+// long ultimaLeituraVolt = 0;
 
-void processaVoltimetro(int intervalo)
-{
-    long agora = millis();
+// void processaVoltimetro(int intervalo)
+// {
+//     long agora = millis();
 
-    if ((agora - ultimaLeituraVolt) > intervalo)
-    {
-        float valor = analogRead(analogPin);
-        float vsaida = (valor * 3.3) / 1023.0;
-        tensao = vsaida / (r2 / (r1 + r2));
+//     if ((agora - ultimaLeituraVolt) > intervalo)
+//     {
+//         float valor = analogRead(analogPin);
+//         float vsaida = (valor * 3.3) / 1023.0;
+//         tensao = vsaida / (r2 / (r1 + r2));
 
-        pubBroker("sensor=VBat tensao=" + (String)tensao);
+//         pubBroker("sensor=VBat tensao=" + (String)tensao);
 
-        ultimaLeituraVolt = agora;
-    }
-}
+//         ultimaLeituraVolt = agora;
+//     }
+// }
 
-float obtemNivelBateria()
-{
-    return tensao;
-}
+// float obtemNivelBateria()
+// {
+//     return tensao;
+// }

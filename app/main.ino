@@ -27,14 +27,11 @@ void loop()
 
 void iniciaES()
 {
-    // iniciaVoltimetro();
     iniciaDisplay();
     iniciaDHT();
     iniciaBMP();
-    iniciaWIFI();
-    // iniciaBroker();
+    initServer();
     iniciaRzr();
-    // iniciaBT();
 }
 
 uint16_t tempoVBat = 5000;
@@ -44,16 +41,12 @@ uint16_t tempoWifi = 5000;
 
 void processaES()
 {
-    // processaVoltimetro(tempoVBat);
     processaRzr();
     processaDHT();
     processaBMP(tempoBmp);
 
+    loopServer();
+
     if (nivelLog == 0)
         processaDisplay(tempoDisplay);
-
-    processaWIFI(tempoWifi);
-    // processaBT();
-    // processaSaida();
-    // processaBroker();
 }

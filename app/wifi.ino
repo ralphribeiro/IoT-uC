@@ -1,79 +1,79 @@
-#include <ESP8266WiFi.h>
-#include <WiFiUdp.h>
-#include <NTPClient.h>
+// #include <ESP8266WiFi.h>
+// #include <WiFiUdp.h>
+// #include <NTPClient.h>
 
-const char *ssid = "Vivas_Ribeiro"; // SSID
-const char *password = "suupeR114"; // Senha
-const int UTC = -3*60*60;
+// const char *ssid = "Vivas_Ribeiro"; // SSID
+// const char *password = "suupeR114"; // Senha
+// const int UTC = -3*60*60;
 
 
-WiFiUDP ntpUDP;
-NTPClient dataCliente(ntpUDP, "pool.ntp.org", UTC);
+// WiFiUDP ntpUDP;
+// NTPClient dataCliente(ntpUDP, "pool.ntp.org", UTC);
 
-bool statusWf = 0;
-bool statusWifi()
-{
-	return statusWf;
-}
-
-// String ipLocal()
+// bool statusWf = 0;
+// bool statusWifi()
 // {
-// 	return String(WiFi.localIP());
+// 	return statusWf;
 // }
 
-void iniciaWIFI()
-{
-	WiFi.begin(ssid, password);
-	logging("Conectando-se na rede: ", 0);
-	logging(String(ssid), 0);
-	logging("\n", 0);
+// // String ipLocal()
+// // {
+// // 	return String(WiFi.localIP());
+// // }
 
-	while (WiFi.status() != WL_CONNECTED)
-	{
-		logging(".", 1);
-		delay(500);
-	}
-	statusWf = 1;
-	logging("WiFi conectado!\n", 0);
+// void iniciaWIFI()
+// {
+// 	WiFi.begin(ssid, password);
+// 	logging("Conectando-se na rede: ", 0);
+// 	logging(String(ssid), 0);
+// 	logging("\n", 0);
+
+// 	while (WiFi.status() != WL_CONNECTED)
+// 	{
+// 		logging(".", 1);
+// 		delay(500);
+// 	}
+// 	statusWf = 1;
+// 	logging("WiFi conectado!\n", 0);
 	
-	WiFi.setAutoReconnect(true);
+// 	WiFi.setAutoReconnect(true);
 
-	dataCliente.begin();
-	dataCliente.update();
-}
-
-
-long ultimaLeituraWf = 0;
-long ultimaLeituraData = 0;
-int intervaloData = 60*1000;
-
-void processaWIFI(int intervaloWf)
-{
-	long agora = millis();
-	if ((agora - ultimaLeituraWf) > intervaloWf)
-	{
-		statusWf = WiFi.isConnected();
-		ultimaLeituraWf = agora;
-	}
-
-	if ((agora - ultimaLeituraData) > intervaloData)
-	{
-		dataCliente.update();
-		ultimaLeituraData = agora;
-	}
-}
+// 	dataCliente.begin();
+// 	dataCliente.update();
+// }
 
 
-char diasDaSemana[7][4] = {
-	"Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sab"
-};
+// long ultimaLeituraWf = 0;
+// long ultimaLeituraData = 0;
+// int intervaloData = 60*1000;
 
-char* obtemDia()
-{	
-	return diasDaSemana[dataCliente.getDay()];
-}
+// void processaWIFI(int intervaloWf)
+// {
+// 	long agora = millis();
+// 	if ((agora - ultimaLeituraWf) > intervaloWf)
+// 	{
+// 		statusWf = WiFi.isConnected();
+// 		ultimaLeituraWf = agora;
+// 	}
 
-String obtemTempo()
-{
-	return dataCliente.getFormattedTime();
-}
+// 	if ((agora - ultimaLeituraData) > intervaloData)
+// 	{
+// 		dataCliente.update();
+// 		ultimaLeituraData = agora;
+// 	}
+// }
+
+
+// char diasDaSemana[7][4] = {
+// 	"Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sab"
+// };
+
+// char* obtemDia()
+// {	
+// 	return diasDaSemana[dataCliente.getDay()];
+// }
+
+// String obtemTempo()
+// {
+// 	return dataCliente.getFormattedTime();
+// }
