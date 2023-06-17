@@ -1,44 +1,58 @@
-#include <Led.h>
+#include <Arduino.h>
+
 #define PWMPIN D5
 
-uint16_t nivelMin = 50;
-uint16_t nivelMax = 800;
-
-uint8_t intervaloEventoFade = 30;
-uint8_t degrauFade = 20;
-
-Led led = Led(PWMPIN, 1, nivelMin, nivelMax);
-
-// void manipulaFade()
-// {
-//     if (!led.fade())
-//     {
-//         if (!led.aceso())
-//             led.ativaFade(HIGH, degrauFade, intervaloEventoFade);
-//         else
-//             led.ativaFade(LOW, degrauFade, intervaloEventoFade);
-//     }
-// }
-
-int nivelPwm = 0;
-int obtemNivelPwm()
+void setup_pwm()
 {
-    return nivelPwm;
+    analogWriteFreq(25000);
+    pinMode(PWMPIN, OUTPUT);
+    analogWrite(PWMPIN, 0);
 }
 
-void sobeNivelSaida()
+int pwm_min = 0;
+int pwm_max = 1023;
+int pwm = 0;
+const int pwm_step = 100;
+int last_time_process = 0;
+
+void to_down_pwm()
 {
-    led.incrementaNivel(50);
+    if (pwm < pwm_step)
+        pwm = pwm_min;
+    else
+        pwm -= pwm_step;
 }
 
-void desceNivelSaida()
+void to_up_pwm()
 {
-    led.decrementaNivel(50);
+    if (pwm >= pwm_max - pwm_step)
+        pwm = pwm_max;
+    else
+        pwm += pwm_step;
 }
 
-void processaSaida()
+bool is_up_pwm = true;
+
+void pwm_output_process()
 {
-    // if (!led.processa())
-    //     manipulaFade();
-    nivelPwm = map(led.obtemNivel(), 0, nivelMax, 0, 100);
+    int now = millis();
+    if (now - last_time_process > 500)
+    {
+        pwm = 254;
+        // if (is_up_pwm)
+        // {
+        //     to_up_pwm();
+        //     if (pwm == pwm_max)
+        //         is_up_pwm = false;
+        // }
+        // else
+        // {
+        //     to_down_pwm();
+        //     if (pwm == pwm_min)
+        //         is_up_pwm = true;
+        // }
+        
+        last_time_process = now;
+        analogWrite(PWMPIN, pwm);
+    }
 }

@@ -16,7 +16,6 @@ void logging(String msg, unsigned short int nivLog)
 
 void setup()
 {
-    analogWriteFreq(10000);
     iniciaES();
 }
 
@@ -27,6 +26,7 @@ void loop()
 
 void iniciaES()
 {
+    setup_pwm();
     iniciaDisplay();
     iniciaDHT();
     iniciaBMP();
@@ -41,6 +41,7 @@ uint16_t tempoWifi = 5000;
 
 void processaES()
 {
+    pwm_output_process();
     processaRzr();
     processaDHT();
     processaBMP(tempoBmp);

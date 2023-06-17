@@ -80,11 +80,9 @@ void processaBT()
         switch (received)
         {
         case 's':
-            sobeNivelSaida();
             break;
 
         case 'd':
-            desceNivelSaida();
             break;
         default:
             break;
